@@ -8,6 +8,7 @@
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-mermaid%20%2B%20CNIPA-2EAD33.svg)](https://playwright.dev/)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-green)](https://agentskills.io)
+[![Powered by TypeSafe Jev](https://img.shields.io/badge/System--1-TypeSafe%20Jev-8A2BE2.svg)](https://openrouter.ai)
 
 <br>
 
@@ -203,11 +204,30 @@
 
 ---
 
+## Jev 快门禁：素材完备性与法定类型亚秒级初审
+
+本项目集成 **TypeSafe Jev（快思考 System-1 决策引擎）**。在发明人提交原始技术素材时，调用 `patent_intake_gate.py` 进行 300ms 预检：
+```bash
+python skills/patent-disclosure/tools/patent_intake_gate.py --text "<技术素材>"
+```
+- **完备度评分**：Level 0（仅商业概念/缺机理）、Level 1（有流程但缺关键参数/拓扑）、Level 2（完备充分直接撰写）；
+- **法定类型裁决**：自动判别发明 / 实用新型 / 外观设计；
+- **公知常识区分度**：输出 $p \in [0, 1]$ 概率；
+- **定向事实追问**：若完备度不足（退出码 2），直接给出精准事实缺口清单向发明人定向追问，坚决杜绝无事实瞎编。
+
+---
+
 ## 参考文档
 
 - [技能入口与 Agent 流程](SKILL.md)（交底 / 申请文件 / 案卷会稿 / 著录检索 / 解读 / 政策简报 / 审查答复）
 - [详细安装说明](INSTALL.md)
 - [Obsidian 安装与可选社区插件（Windows）](skills/patent-reader/docs/obsidian-setup-guide.md)
+
+---
+
+## GitHub Topics / Tags
+
+`jev` `typesafe-jev` `system-1-decision` `patent-disclosure` `patent-mining` `cnipa` `ai-patent` `llm-agents` `agentskills`
 
 ---
 

@@ -25,6 +25,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob, WebSearch, Bash
 ## 路由
 
 - 填表、线稿、CAD、公式、Word 出图在交底包 `prompts/` 与 `tools/`；解读填表用解读包 `prompts/fill_*`；过 WAF 的 `browser.py`、Markdown 转 Word 的 `md_to_docx.py` **各包自带副本**。
+- **素材入口初审（Jev 快门禁）**：收到发明人初始素材或需求时，推荐先运行 `python skills/patent-disclosure/tools/patent_intake_gate.py --text "<素材>"`，由 Jev 在 300ms 内评定完备度（Level 0/1/2）与专利类型。若完备度不足，先向发明人定向索要事实，杜绝无事实编造。
 - **禁止跨包调用**其他子技能的 `tools/`。需要同一能力就用本包副本。
 - 专利号或 PDF 且意图为「读懂」→ **优先解读**，不跑交底 Step 1–8。
 - **禁止**因写交底或读专利自动进入政策简报、审查答复、申请文件、案卷或专利地图。申请文件必须用户点名并给出交底目录；缺 schema / 线稿 / 交底书则停，引导先补交底。内容争议不阻塞主文件。
@@ -48,7 +49,7 @@ skills/patent-exam-policy/        # 政策简报（技能进化为旁路）
 ## 环境与约定
 
 - **默认语言**：面向用户的检索清单、交底书、申请文件、案卷 TRACKER、解读和审查答复用简体中文；脚本机读前缀与 JSON 字段名保持稳定。
-- **脚本判读（尤其 Windows）**：stderr 有字 **不等于** 失败。以 **退出码 0** 和机读前缀为准：`EPUB_HITS_JSON:` / `EPUB_SEARCH_MD:` / `EPUB_SEARCH_JSON:` / `EPUB_CLASS_HINT:`、`PROBE:` / `BROWSER:`、`MERMAID:` / `DOCX:`、`APPLICATION_GATE:` / `APPLICATION_CLAIMS:` / `APPLICATION_NUMERALS:`、`DOCKET_DIR:` / `DOCKET_YAML:` / `DOCKET_OK:` / `DOCKET_ERROR:`、`MAP_URL:` / `MAP_PORT:` / `MAP_VAULT:` / `MAP_SOURCE:` / `MAP_CACHE:`。PowerShell 可能把 stderr 标成 `NativeCommandError`；**禁止**因此重跑安装或把查新降级 WebSearch。
+- **脚本判读（尤其 Windows）**：stderr 有字 **不等于** 失败。以 **退出码 0** 和机读前缀为准：`INTAKE_GATE_JSON:`、`EPUB_HITS_JSON:` / `EPUB_SEARCH_MD:` / `EPUB_SEARCH_JSON:` / `EPUB_CLASS_HINT:`、`PROBE:` / `BROWSER:`、`MERMAID:` / `DOCX:`、`APPLICATION_GATE:` / `APPLICATION_CLAIMS:` / `APPLICATION_NUMERALS:`、`DOCKET_DIR:` / `DOCKET_YAML:` / `DOCKET_OK:` / `DOCKET_ERROR:`、`MAP_URL:` / `MAP_PORT:` / `MAP_VAULT:` / `MAP_SOURCE:` / `MAP_CACHE:`。PowerShell 可能把 stderr 标成 `NativeCommandError`；**禁止**因此重跑安装或把查新降级 WebSearch。
 - **专利类型**：未显式指定时交底**默认发明**。
 - **脚本路径**：相对本技能仓库根（本文件所在目录）。整仓：`python skills/patent-disclosure/tools/…`。当前工作区不是本仓库时，把技能安装目录接到命令前面。单独拷走某一子包时，该包内用 `python tools/…`。不要写厂商环境变量。
 - **用户产出**：写在当前工作区 `outputs/`（解读 `outputs/patent_reader/`，检索 `outputs/patent-search/`，政策 `outputs/exam-policy/`，审查答复 `outputs/oa/`，申请文件 `outputs/patent-application/`，案卷 `outputs/docket/`），不要写到技能安装目录或 `tmp/`。调用脚本时 cwd 用工作区根；`-o` / `-w` 用上述相对路径。
