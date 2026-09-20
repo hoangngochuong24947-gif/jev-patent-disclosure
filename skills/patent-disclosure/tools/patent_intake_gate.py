@@ -14,28 +14,96 @@ patent_intake_gate.py — 专利交底材料完备性与类型评估门禁 (Syst
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
-from typing import Any, Dict
+import urllib.error
+import urllib.request
+from typing import Any, Dict, Optional
+
+DECISIONS_ENDPOINT = "https://openrouter.ai/api/alpha/decisions"
+DEFAULT_MODEL = "~typesafe/jev-latest"
+
+
+def resolve_openrouter_key() -> Optional[str]:
+    """尝试从环境变量、.env 文件中获取 OpenRouter Key"""
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if key and key.startswith("sk-or-"):
+        return key
+
+    # 递归查找当前目录及父级目录中的 .env
+    current = os.path.abspath(os.getcwd())
+    while current != os.path.dirname(current):
+        env_path = os.path.join(current, ".env")
+        if os.path.isfile(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("OPENROUTER_API_KEY="):
+                            val = line.split("=", 1)[1].strip("'\" \t")
+                            if val.startswith("sk-or-"):
+                                return val
+            except Exception:
+                pass
+        current = os.path.dirname(current)
+    return None
+
+
+def query_jev_direct(state: str, questions: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+    """无需外部 CLI，直接通过 Python 内置 urllib 请求 OpenRouter Jev Alpha 端点"""
+    payload = {
+        "model": DEFAULT_MODEL,
+        "state": state,
+        "questions": questions
+    }
+    req = urllib.request.Request(
+        DECISIONS_ENDPOINT,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://localhost",
+            "X-Title": "jev-patent-disclosure"
+        },
+        method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data.get("answers", {})
 
 
 def query_jev(state: str, questions: Dict[str, Any]) -> Dict[str, Any]:
-    """通过 jev CLI 执行结构化快决策"""
-    try:
-        cmd = [
-            "jev", "decide",
-            "--state", state,
-            "--questions", json.dumps(questions, ensure_ascii=False),
-            "--answers-only"
-        ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return json.loads(res.stdout.strip())
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing jev CLI: {e.stderr}", file=sys.stderr)
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error querying Jev: {e}", file=sys.stderr)
-        sys.exit(1)
+    """混合策略：优先使用本地 jev CLI，不存在则自愈回退到原生 HTTP API"""
+    jev_path = shutil.which("jev")
+    if jev_path:
+        try:
+            cmd = [
+                jev_path, "decide",
+                "--state", state,
+                "--questions", json.dumps(questions, ensure_ascii=False),
+                "--answers-only"
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return json.loads(res.stdout.strip())
+        except Exception:
+            pass  # 回退到原生 HTTP
+
+    api_key = resolve_openrouter_key()
+    if api_key:
+        try:
+            return query_jev_direct(state, questions, api_key)
+        except Exception as e:
+            print(f"Error querying OpenRouter Decisions API: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    print(
+        "Error: OPENROUTER_API_KEY is not set and 'jev' CLI is not found in PATH.\n"
+        "Please run: export OPENROUTER_API_KEY='sk-or-v1-...'\n"
+        "Or install jev: pip install typesafe-jev",
+        file=sys.stderr
+    )
+    sys.exit(1)
 
 
 def main():
