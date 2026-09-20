@@ -1,8 +1,8 @@
 <div align="center">
 
-# 中国专利.skill
+# jev-patent-disclosure
 
-> 专利点挖掘与交底书（发明/实用/外观）编写，已有交底改写成申请文件，交底到申请可以一起做，公布公告著录检索，通俗解读专利，对照审查口径出政策简报，辅助审查答复。
+> 中国专利.skill（Jev 快思考增强版）：专利点挖掘与交底书（发明/实用/外观）编写，已有交底改写成申请文件，交底到申请可以一起做，公布公告著录检索，通俗解读专利，对照审查口径出政策简报，辅助审查答复。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
@@ -227,7 +227,7 @@ python skills/patent-disclosure/tools/patent_intake_gate.py --text "<技术素�
 
 ## GitHub Topics / Tags
 
-`jev` `typesafe-jev` `system-1-decision` `patent-disclosure` `patent-mining` `cnipa` `ai-patent` `llm-agents` `agentskills`
+`jev` `jeb` `typesafe-jev` `system-1-decision` `patent-disclosure` `patent-mining` `cnipa` `ai-patent` `llm-agents` `agentskills`
 
 ---
 
